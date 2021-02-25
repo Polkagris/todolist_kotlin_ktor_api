@@ -13,13 +13,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 data class Response (val status: String)
 
-
-
 object todos : Table() {
-    val id: Column<Int> = integer("id")
+    val id: Column<Int> = integer("id").autoIncrement()
     val name: Column<String> = varchar("name", 255)
 
-    //override val primaryKey = PrimaryKey(id, name="PK_Todo_ID")
+    // override val primaryKey = PrimaryKey(id, name="PK_Todo_ID")
 
     fun toTodo(row: ResultRow): Todo =
         Todo(
@@ -29,8 +27,8 @@ object todos : Table() {
 }
 
 data class Todo(
-    val name: String,
-    val id: Int
+    val id: Int? = null,
+    val name: String
 )
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -44,22 +42,12 @@ fun Application.module(testing: Boolean = false) {
 
     transaction {
         todos.insert {
-            it[id] = 22
-            it[name] = "testTodo walking outside"
-
+            it[id] = (100000..999999).random()
+            it[name] = "Random number generator"
         }
     }
     //Gradle
     // compile("mysql:mysql-connector-java:5.1.48")
-
-/*val userList = mutableListOf<Todo>()
-    val todo1 = Todo("Make dinnar", id = "1")
-    val todo2 = Todo("Go shipping", id = "2")
-    val todo3 = Todo("Get the email", id = "3")
-    userList.add(todo1)
-    userList.add(todo2)
-    userList.add(todo3)
-    println(userList)*/
 
     install(StatusPages) {
         exception<Throwable> { e ->
